@@ -23,11 +23,9 @@ export default function GamePage() {
   const [isConnecting, setIsConnecting] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showFinale, setShowFinale] = useState(false);
-  const [micMuted, setMicMuted] = useState(true); // Start muted to prevent interruptions
 
-  // ElevenLabs conversation hook with controlled mic mute state
+  // ElevenLabs conversation hook
   const conversation = useConversation({
-    micMuted,
     onConnect: () => {
       console.log("[ElevenLabs] Connected");
       setIsConnecting(false);
@@ -44,15 +42,6 @@ export default function GamePage() {
     },
     onModeChange: (mode: { mode: string; [key: string]: unknown }) => {
       console.log("[ElevenLabs] Mode changed:", mode);
-      // Unmute mic only when AI switches to listening mode (asking a question)
-      // Mute when AI is speaking to prevent interruptions
-      if (mode.mode === "listening") {
-        setMicMuted(false);
-        console.log("[ElevenLabs] Mic unmuted - listening for response");
-      } else if (mode.mode === "speaking") {
-        setMicMuted(true);
-        console.log("[ElevenLabs] Mic muted - AI speaking");
-      }
     },
   });
 
