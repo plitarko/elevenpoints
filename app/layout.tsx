@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AI Trivia Game Show",
+  title: "ELEVENPOINTS | Trivia Game Show",
   description: "A two-player trivia game show hosted by an AI",
 };
 

@@ -52,16 +52,16 @@ export default function Home() {
     <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-8">
       {/* Title */}
       <h1
-        className="text-6xl md:text-8xl font-bold text-orange-500 mb-4 tracking-tight"
+        className="text-6xl md:text-8xl font-bold text-orange-500 mb-2 tracking-tight"
         style={{ fontFamily: "Impact, sans-serif" }}
       >
-        TRIVIA
+        ELEVENPOINTS
       </h1>
       <h2
-        className="text-3xl md:text-5xl font-bold text-cyan-400 mb-12"
+        className="text-2xl md:text-3xl font-bold text-cyan-400 mb-12"
         style={{ fontFamily: "Impact, sans-serif" }}
       >
-        GAME SHOW
+        TRIVIA GAME SHOW
       </h2>
 
       {/* Game Info */}
@@ -70,10 +70,9 @@ export default function Home() {
           A two-player trivia battle hosted by an AI game show host.
         </p>
         <div className="text-sm text-gray-500 space-y-1">
-          <p>• 3 rounds, 2 questions each</p>
+          <p>• 3 rounds, 1 question per person per round</p>
           <p>• 3 seconds to answer</p>
           <p>• Round 3 features image questions</p>
-          <p>• 5-8 minute games</p>
         </div>
       </div>
 

@@ -13,14 +13,21 @@ export default function GamePage() {
   const sessionId = params.sessionId as string;
   const supabase = createClient();
 
+  // Debug: Log sessionId on mount
+  useEffect(() => {
+    console.log("[GamePage] Session ID from URL:", sessionId);
+  }, [sessionId]);
+
   const [session, setSession] = useState<Session | null>(null);
   const [media, setMedia] = useState<SessionMedia[]>([]);
   const [isConnecting, setIsConnecting] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showFinale, setShowFinale] = useState(false);
+  const [micMuted, setMicMuted] = useState(true); // Start muted to prevent interruptions
 
-  // ElevenLabs conversation hook
+  // ElevenLabs conversation hook with controlled mic mute state
   const conversation = useConversation({
+    micMuted,
     onConnect: () => {
       console.log("[ElevenLabs] Connected");
       setIsConnecting(false);
@@ -35,8 +42,17 @@ export default function GamePage() {
     onMessage: (message) => {
       console.log("[ElevenLabs] Message received:", message);
     },
-    onModeChange: (mode) => {
+    onModeChange: (mode: { mode: string; [key: string]: unknown }) => {
       console.log("[ElevenLabs] Mode changed:", mode);
+      // Unmute mic only when AI switches to listening mode (asking a question)
+      // Mute when AI is speaking to prevent interruptions
+      if (mode.mode === "listening") {
+        setMicMuted(false);
+        console.log("[ElevenLabs] Mic unmuted - listening for response");
+      } else if (mode.mode === "speaking") {
+        setMicMuted(true);
+        console.log("[ElevenLabs] Mic muted - AI speaking");
+      }
     },
   });
 
@@ -94,9 +110,14 @@ export default function GamePage() {
         const { signedUrl } = await response.json();
         console.log("[ElevenLabs] Got signed URL, starting session...");
 
-        // Start the conversation
-        await conversation.startSession({ signedUrl });
-        console.log("[ElevenLabs] Session started successfully");
+        // Start the conversation with session_id as dynamic variable
+        await conversation.startSession({
+          signedUrl,
+          dynamicVariables: {
+            session_id: sessionId,
+          },
+        });
+        console.log("[ElevenLabs] Session started successfully with session_id:", sessionId);
       } catch (err) {
         console.error("[ElevenLabs] Error starting conversation:", err);
         setError("Failed to connect to AI host. Please refresh the page.");
@@ -280,7 +301,7 @@ export default function GamePage() {
           className="text-4xl md:text-6xl font-bold text-orange-500"
           style={{ fontFamily: "Impact, sans-serif" }}
         >
-          TRIVIA GAME SHOW
+          ELEVENPOINTS
         </h1>
         {session?.round_name && (
           <h2 className="text-2xl md:text-3xl text-cyan-400 mt-2">
@@ -302,53 +323,57 @@ export default function GamePage() {
           {/* Players */}
           <div className="flex justify-between items-start mb-8">
             {/* Player 1 */}
-            <div
-              className={`text-center p-4 rounded border-4 ${
-                currentPlayer === 1
-                  ? "border-orange-500"
-                  : "border-transparent"
-              }`}
-            >
-              <div className="w-20 h-20 bg-orange-500 rounded-full mx-auto mb-2 flex items-center justify-center">
-                <svg
-                  className="w-12 h-12 text-black"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <circle cx="12" cy="8" r="4" />
-                  <ellipse cx="12" cy="20" rx="8" ry="4" />
-                </svg>
+            {session.p1_name ? (
+              <div
+                className={`text-center p-4 rounded border-4 ${
+                  currentPlayer === 1
+                    ? "border-orange-500"
+                    : "border-transparent"
+                }`}
+              >
+                <div className="w-20 h-20 bg-orange-500 rounded-full mx-auto mb-2 flex items-center justify-center">
+                  <svg
+                    className="w-12 h-12 text-black"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle cx="12" cy="8" r="4" />
+                    <ellipse cx="12" cy="20" rx="8" ry="4" />
+                  </svg>
+                </div>
+                <p className="text-orange-500 font-bold">{session.p1_name}</p>
+                <p className="text-3xl font-bold">{session.p1_score}</p>
               </div>
-              <p className="text-orange-500 font-bold">
-                {session.p1_name || "Player 1"}
-              </p>
-              <p className="text-3xl font-bold">{session.p1_score}</p>
-            </div>
+            ) : (
+              <div className="w-20 h-20" />
+            )}
 
             {/* Audio Visualizer */}
             <AudioVisualizer isActive={conversation.isSpeaking} />
 
             {/* Player 2 */}
-            <div
-              className={`text-center p-4 rounded border-4 ${
-                currentPlayer === 2 ? "border-cyan-400" : "border-transparent"
-              }`}
-            >
-              <div className="w-20 h-20 bg-cyan-400 rounded-full mx-auto mb-2 flex items-center justify-center">
-                <svg
-                  className="w-12 h-12 text-black"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <circle cx="12" cy="8" r="4" />
-                  <ellipse cx="12" cy="20" rx="8" ry="4" />
-                </svg>
+            {session.p2_name ? (
+              <div
+                className={`text-center p-4 rounded border-4 ${
+                  currentPlayer === 2 ? "border-cyan-400" : "border-transparent"
+                }`}
+              >
+                <div className="w-20 h-20 bg-cyan-400 rounded-full mx-auto mb-2 flex items-center justify-center">
+                  <svg
+                    className="w-12 h-12 text-black"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle cx="12" cy="8" r="4" />
+                    <ellipse cx="12" cy="20" rx="8" ry="4" />
+                  </svg>
+                </div>
+                <p className="text-cyan-400 font-bold">{session.p2_name}</p>
+                <p className="text-3xl font-bold">{session.p2_score}</p>
               </div>
-              <p className="text-cyan-400 font-bold">
-                {session.p2_name || "Player 2"}
-              </p>
-              <p className="text-3xl font-bold">{session.p2_score}</p>
-            </div>
+            ) : (
+              <div className="w-20 h-20" />
+            )}
           </div>
 
           {/* Question display */}
