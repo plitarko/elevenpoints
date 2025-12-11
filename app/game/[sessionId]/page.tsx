@@ -22,15 +22,21 @@ export default function GamePage() {
   // ElevenLabs conversation hook
   const conversation = useConversation({
     onConnect: () => {
-      console.log("Connected to ElevenLabs");
+      console.log("[ElevenLabs] Connected");
       setIsConnecting(false);
     },
     onDisconnect: () => {
-      console.log("Disconnected from ElevenLabs");
+      console.log("[ElevenLabs] Disconnected");
     },
     onError: (err) => {
-      console.error("ElevenLabs error:", err);
+      console.error("[ElevenLabs] Error:", err);
       setError("Connection error. Please refresh the page.");
+    },
+    onMessage: (message) => {
+      console.log("[ElevenLabs] Message received:", message);
+    },
+    onModeChange: (mode) => {
+      console.log("[ElevenLabs] Mode changed:", mode);
     },
   });
 
@@ -70,6 +76,8 @@ export default function GamePage() {
   useEffect(() => {
     const initConversation = async () => {
       try {
+        console.log("[ElevenLabs] Fetching signed URL for session:", sessionId);
+
         // Get signed URL from our API
         const response = await fetch("/api/get-signed-url", {
           method: "POST",
@@ -78,15 +86,19 @@ export default function GamePage() {
         });
 
         if (!response.ok) {
+          const errorText = await response.text();
+          console.error("[ElevenLabs] Failed to get signed URL:", errorText);
           throw new Error("Failed to get signed URL");
         }
 
         const { signedUrl } = await response.json();
+        console.log("[ElevenLabs] Got signed URL, starting session...");
 
         // Start the conversation
         await conversation.startSession({ signedUrl });
+        console.log("[ElevenLabs] Session started successfully");
       } catch (err) {
-        console.error("Error starting conversation:", err);
+        console.error("[ElevenLabs] Error starting conversation:", err);
         setError("Failed to connect to AI host. Please refresh the page.");
         setIsConnecting(false);
       }
@@ -96,6 +108,7 @@ export default function GamePage() {
 
     // Cleanup on unmount
     return () => {
+      console.log("[ElevenLabs] Ending session (cleanup)");
       conversation.endSession();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -178,7 +191,7 @@ export default function GamePage() {
           <p className="text-red-500 text-xl mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded-lg"
+            className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded"
           >
             Refresh
           </button>
@@ -251,7 +264,7 @@ export default function GamePage() {
 
         <button
           onClick={() => (window.location.href = "/")}
-          className="px-8 py-4 bg-gray-700 hover:bg-gray-600 text-white font-bold text-xl rounded-lg"
+          className="px-8 py-4 bg-gray-700 hover:bg-gray-600 text-white font-bold text-xl rounded"
         >
           Play Again
         </button>
@@ -290,7 +303,7 @@ export default function GamePage() {
           <div className="flex justify-between items-start mb-8">
             {/* Player 1 */}
             <div
-              className={`text-center p-4 rounded-lg border-4 ${
+              className={`text-center p-4 rounded border-4 ${
                 currentPlayer === 1
                   ? "border-orange-500"
                   : "border-transparent"
@@ -317,7 +330,7 @@ export default function GamePage() {
 
             {/* Player 2 */}
             <div
-              className={`text-center p-4 rounded-lg border-4 ${
+              className={`text-center p-4 rounded border-4 ${
                 currentPlayer === 2 ? "border-cyan-400" : "border-transparent"
               }`}
             >
@@ -340,7 +353,7 @@ export default function GamePage() {
 
           {/* Question display */}
           {session.q_text && (
-            <div className="bg-gray-900 rounded-lg p-6 mb-8">
+            <div className="bg-gray-900 rounded p-6 mb-8">
               <p className="text-sm text-gray-500 mb-2">
                 Question {session.q_number} of 6
               </p>
@@ -350,7 +363,7 @@ export default function GamePage() {
 
           {/* Image display for Round 3 */}
           {isRound3 && currentImage && (
-            <div className="relative w-full aspect-video rounded-lg overflow-hidden mb-8">
+            <div className="relative w-full aspect-video rounded overflow-hidden mb-8">
               <Image
                 src={currentImage.image_url}
                 alt="Round 3 image question"

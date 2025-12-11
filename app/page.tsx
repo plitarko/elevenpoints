@@ -81,14 +81,14 @@ export default function Home() {
       <div className="flex flex-col sm:flex-row gap-4">
         <button
           onClick={() => startGame(false)}
-          className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-black font-bold text-xl rounded-lg transition-colors"
+          className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-black font-bold text-xl rounded transition-colors"
           style={{ fontFamily: "Impact, sans-serif" }}
         >
           START GAME
         </button>
         <button
           onClick={() => startGame(true)}
-          className="px-8 py-4 bg-gray-700 hover:bg-gray-600 text-white font-bold text-xl rounded-lg transition-colors"
+          className="px-8 py-4 bg-gray-700 hover:bg-gray-600 text-white font-bold text-xl rounded transition-colors"
           style={{ fontFamily: "Impact, sans-serif" }}
         >
           TEST MODE

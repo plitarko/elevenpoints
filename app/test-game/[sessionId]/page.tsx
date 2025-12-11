@@ -139,39 +139,57 @@ export default function TestGamePage() {
 
   // Update session via Edge Function
   const updateSession = async (updates: Record<string, unknown>) => {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/update-session`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({ session_id: sessionId, ...updates }),
-      }
-    );
+    console.log("[TestGame] Updating session:", updates);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/update-session`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ session_id: sessionId, ...updates }),
+        }
+      );
 
-    if (!response.ok) {
-      console.error("Failed to update session");
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("[TestGame] Failed to update session:", response.status, errorText);
+      } else {
+        const data = await response.json();
+        console.log("[TestGame] Session updated successfully:", data);
+      }
+    } catch (err) {
+      console.error("[TestGame] Error updating session:", err);
     }
   };
 
   // Fetch image via Edge Function
   const fetchImage = async (topic: string) => {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/fetch-image-url`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({ session_id: sessionId, topic }),
-      }
-    );
+    console.log("[TestGame] Fetching image for topic:", topic);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/fetch-image-url`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ session_id: sessionId, topic }),
+        }
+      );
 
-    if (!response.ok) {
-      console.error("Failed to fetch image");
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("[TestGame] Failed to fetch image:", response.status, errorText);
+      } else {
+        const data = await response.json();
+        console.log("[TestGame] Image fetched successfully:", data);
+      }
+    } catch (err) {
+      console.error("[TestGame] Error fetching image:", err);
     }
   };
 
@@ -209,10 +227,10 @@ export default function TestGamePage() {
         break;
 
       case "round1_q1":
+        setGameState("round1_a1");
         setCurrentQuestion(1);
         await updateSession({ q_number: 1, q_text: questionInput });
         setQuestionInput("");
-        setGameState("round1_a1");
         break;
 
       case "round1_a1":
@@ -226,10 +244,10 @@ export default function TestGamePage() {
         break;
 
       case "round1_q2":
+        setGameState("round1_a2");
         setCurrentQuestion(2);
         await updateSession({ q_number: 2, q_text: questionInput });
         setQuestionInput("");
-        setGameState("round1_a2");
         break;
 
       case "round1_a2":
@@ -240,20 +258,20 @@ export default function TestGamePage() {
         });
         setAnswerInput("");
         setTopicInput("");
+        setCurrentRound(2);
         setGameState("round2_intro");
         break;
 
       case "round2_intro":
         await updateSession({ round_name: `Round 2: ${topicInput || "Science"}` });
-        setCurrentRound(2);
         setGameState("round2_q1");
         break;
 
       case "round2_q1":
+        setGameState("round2_a1");
         setCurrentQuestion(3);
         await updateSession({ q_number: 3, q_text: questionInput });
         setQuestionInput("");
-        setGameState("round2_a1");
         break;
 
       case "round2_a1":
@@ -267,10 +285,10 @@ export default function TestGamePage() {
         break;
 
       case "round2_q2":
+        setGameState("round2_a2");
         setCurrentQuestion(4);
         await updateSession({ q_number: 4, q_text: questionInput });
         setQuestionInput("");
-        setGameState("round2_a2");
         break;
 
       case "round2_a2":
@@ -281,6 +299,7 @@ export default function TestGamePage() {
         });
         setAnswerInput("");
         setTopicInput("");
+        setCurrentRound(3);
         setGameState("round3_intro");
         break;
 
@@ -290,7 +309,6 @@ export default function TestGamePage() {
 
       case "round3_topic":
         await updateSession({ round_name: `Round 3: ${topicInput || "Images"}` });
-        setCurrentRound(3);
         setGameState("round3_q1_image");
         break;
 
@@ -300,10 +318,10 @@ export default function TestGamePage() {
         break;
 
       case "round3_q1":
+        setGameState("round3_a1");
         setCurrentQuestion(5);
         await updateSession({ q_number: 5, q_text: questionInput });
         setQuestionInput("");
-        setGameState("round3_a1");
         break;
 
       case "round3_a1":
@@ -322,10 +340,10 @@ export default function TestGamePage() {
         break;
 
       case "round3_q2":
+        setGameState("round3_a2");
         setCurrentQuestion(6);
         await updateSession({ q_number: 6, q_text: questionInput });
         setQuestionInput("");
-        setGameState("round3_a2");
         break;
 
       case "round3_a2":
@@ -346,6 +364,13 @@ export default function TestGamePage() {
   // Get the latest image
   const currentImage = media.length > 0 ? media[media.length - 1] : null;
 
+  // Handle Enter key to submit
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleNext();
+    }
+  };
+
   // Render control panel based on game state
   const renderControlPanel = () => {
     switch (gameState) {
@@ -353,7 +378,7 @@ export default function TestGamePage() {
         return (
           <div className="space-y-4">
             <p className="text-gray-300">Welcome! Click Next to start the game.</p>
-            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded disabled:opacity-50 disabled:cursor-not-allowed">
               Next
             </button>
           </div>
@@ -367,10 +392,11 @@ export default function TestGamePage() {
               type="text"
               value={p1NameInput}
               onChange={(e) => setP1NameInput(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-orange-500 focus:outline-none"
+              onKeyDown={handleKeyDown}
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded text-white focus:border-orange-500 focus:outline-none"
               placeholder="Player 1 name"
             />
-            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled={!p1NameInput}>
+            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded disabled:opacity-50 disabled:cursor-not-allowed" disabled={!p1NameInput}>
               Set Name
             </button>
           </div>
@@ -384,10 +410,11 @@ export default function TestGamePage() {
               type="text"
               value={p2NameInput}
               onChange={(e) => setP2NameInput(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-orange-500 focus:outline-none"
+              onKeyDown={handleKeyDown}
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded text-white focus:border-orange-500 focus:outline-none"
               placeholder="Player 2 name"
             />
-            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled={!p2NameInput}>
+            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded disabled:opacity-50 disabled:cursor-not-allowed" disabled={!p2NameInput}>
               Set Name
             </button>
           </div>
@@ -399,7 +426,7 @@ export default function TestGamePage() {
             <p className="text-gray-300">
               Players ready: {session?.p1_name} vs {session?.p2_name}
             </p>
-            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded disabled:opacity-50 disabled:cursor-not-allowed">
               Start Round 1
             </button>
           </div>
@@ -416,10 +443,11 @@ export default function TestGamePage() {
               type="text"
               value={topicInput}
               onChange={(e) => setTopicInput(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-orange-500 focus:outline-none"
+              onKeyDown={handleKeyDown}
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded text-white focus:border-orange-500 focus:outline-none"
               placeholder="e.g., Movies, Science, History"
             />
-            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded disabled:opacity-50 disabled:cursor-not-allowed">
               Start Round
             </button>
           </div>
@@ -429,7 +457,7 @@ export default function TestGamePage() {
         return (
           <div className="space-y-4">
             <p className="text-gray-300">Round 3 is the image round!</p>
-            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded disabled:opacity-50 disabled:cursor-not-allowed">
               Continue
             </button>
           </div>
@@ -443,10 +471,11 @@ export default function TestGamePage() {
               type="text"
               value={topicInput}
               onChange={(e) => setTopicInput(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-orange-500 focus:outline-none"
+              onKeyDown={handleKeyDown}
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded text-white focus:border-orange-500 focus:outline-none"
               placeholder="e.g., landmarks, animals, food"
             />
-            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded disabled:opacity-50 disabled:cursor-not-allowed">
               Start Round 3
             </button>
           </div>
@@ -456,9 +485,12 @@ export default function TestGamePage() {
       case "round3_q2_image":
         return (
           <div className="space-y-4">
-            <p className="text-gray-300">Fetching image...</p>
-            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
-              Fetch Image
+            <p className="text-gray-300">Click to fetch an image for the question:</p>
+            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded disabled:opacity-50 disabled:cursor-not-allowed">
+              Fetch Image & Continue
+            </button>
+            <button onClick={() => setGameState(gameState === "round3_q1_image" ? "round3_q1" : "round3_q2")} className="block px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded">
+              Skip Image
             </button>
           </div>
         );
@@ -479,10 +511,11 @@ export default function TestGamePage() {
               type="text"
               value={questionInput}
               onChange={(e) => setQuestionInput(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-orange-500 focus:outline-none"
+              onKeyDown={handleKeyDown}
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded text-white focus:border-orange-500 focus:outline-none"
               placeholder="Enter question text"
             />
-            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled={!questionInput}>
+            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded disabled:opacity-50 disabled:cursor-not-allowed" disabled={!questionInput}>
               Ask Question
             </button>
           </div>
@@ -503,10 +536,11 @@ export default function TestGamePage() {
               type="text"
               value={answerInput}
               onChange={(e) => setAnswerInput(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-orange-500 focus:outline-none"
+              onKeyDown={handleKeyDown}
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded text-white focus:border-orange-500 focus:outline-none"
               placeholder="correct / wrong"
             />
-            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+            <button onClick={handleNext} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded disabled:opacity-50 disabled:cursor-not-allowed">
               Submit Answer
             </button>
           </div>
@@ -520,7 +554,7 @@ export default function TestGamePage() {
               Final Score: {session?.p1_name}: {session?.p1_score} | {session?.p2_name}:{" "}
               {session?.p2_score}
             </p>
-            <button onClick={() => (window.location.href = "/")} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+            <button onClick={() => (window.location.href = "/")} className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded disabled:opacity-50 disabled:cursor-not-allowed">
               Play Again
             </button>
           </div>
@@ -554,7 +588,7 @@ export default function TestGamePage() {
           <div className="flex justify-between items-start">
             {/* Player 1 */}
             <div
-              className={`text-center p-4 rounded-lg border-4 ${
+              className={`text-center p-4 rounded border-4 ${
                 currentPlayer === 1 ? "border-orange-500" : "border-transparent"
               }`}
             >
@@ -573,7 +607,7 @@ export default function TestGamePage() {
 
             {/* Player 2 */}
             <div
-              className={`text-center p-4 rounded-lg border-4 ${
+              className={`text-center p-4 rounded border-4 ${
                 currentPlayer === 2 ? "border-cyan-400" : "border-transparent"
               }`}
             >
@@ -590,7 +624,7 @@ export default function TestGamePage() {
 
           {/* Question display */}
           {session?.q_text && (
-            <div className="bg-gray-900 rounded-lg p-4">
+            <div className="bg-gray-900 rounded p-4">
               <p className="text-sm text-gray-500 mb-2">
                 Question {session.q_number} of 6
               </p>
@@ -600,7 +634,7 @@ export default function TestGamePage() {
 
           {/* Image display */}
           {currentRound === 3 && currentImage && (
-            <div className="relative w-full aspect-video rounded-lg overflow-hidden">
+            <div className="relative w-full aspect-video rounded overflow-hidden">
               <Image
                 src={currentImage.image_url}
                 alt="Round 3 image"
@@ -613,7 +647,7 @@ export default function TestGamePage() {
         </div>
 
         {/* Control Panel */}
-        <div className="bg-gray-900 rounded-lg p-6">
+        <div className="bg-gray-900 rounded p-6">
           <h3 className="text-xl font-bold text-orange-500 mb-4">Control Panel</h3>
           <p className="text-sm text-gray-500 mb-4">
             State: <span className="text-cyan-400">{gameState}</span>
