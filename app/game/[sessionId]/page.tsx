@@ -186,96 +186,116 @@ export default function GamePage() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-500 text-xl mb-4">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded"
-          >
-            Refresh
-          </button>
+      <>
+        <div className="animated-gradient-bg">
+          <div className="gradient-blob-1" />
+          <div className="gradient-blob-2" />
+          <div className="gradient-blob-3" />
         </div>
-      </main>
+        <main className="min-h-screen text-white flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-red-500 text-xl mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-black font-bold rounded"
+            >
+              Refresh
+            </button>
+          </div>
+        </main>
+      </>
     );
   }
 
   if (showFinale && session) {
     return (
-      <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-8">
-        <h1
-          className="text-5xl md:text-7xl font-bold text-orange-500 mb-8"
-          style={{ fontFamily: "Impact, sans-serif" }}
-        >
-          GAME OVER
-        </h1>
-
-        {/* Winner announcement */}
-        <div className="text-3xl md:text-5xl font-bold mb-12">
-          {session.p1_score > session.p2_score ? (
-            <span className="text-orange-500">
-              {session.p1_name || "Player 1"} WINS!
-            </span>
-          ) : session.p2_score > session.p1_score ? (
-            <span className="text-cyan-400">
-              {session.p2_name || "Player 2"} WINS!
-            </span>
-          ) : (
-            <span className="text-gray-400">IT&apos;S A TIE!</span>
-          )}
+      <>
+        <div className="animated-gradient-bg">
+          <div className="gradient-blob-1" />
+          <div className="gradient-blob-2" />
+          <div className="gradient-blob-3" />
         </div>
+        <main className="min-h-screen text-white flex flex-col items-center justify-center p-8">
+          <h1
+            className="text-5xl md:text-7xl font-bold text-orange-500 mb-8"
+            style={{ fontFamily: "Impact, sans-serif" }}
+          >
+            GAME OVER
+          </h1>
 
-        {/* Final scores */}
-        <div className="flex gap-16 mb-12">
-          {/* Player 1 */}
-          <div className="text-center">
-            <div className="w-24 h-24 bg-orange-500 rounded-full mb-4 flex items-center justify-center">
-              <span className="text-4xl font-bold text-black">
-                {session.p1_score}
+          {/* Winner announcement */}
+          <div className="text-3xl md:text-5xl font-bold mb-12">
+            {session.p1_score > session.p2_score ? (
+              <span className="text-orange-500">
+                {session.p1_name || "Player 1"} WINS!
               </span>
+            ) : session.p2_score > session.p1_score ? (
+              <span className="text-cyan-400">
+                {session.p2_name || "Player 2"} WINS!
+              </span>
+            ) : (
+              <span className="text-gray-400">IT&apos;S A TIE!</span>
+            )}
+          </div>
+
+          {/* Final scores */}
+          <div className="flex gap-16 mb-12">
+            {/* Player 1 */}
+            <div className="text-center">
+              <div className="w-24 h-24 bg-orange-500 rounded-full mb-4 flex items-center justify-center">
+                <span className="text-4xl font-bold text-black">
+                  {session.p1_score}
+                </span>
+              </div>
+              <p className="text-orange-500 font-bold text-xl">
+                {session.p1_name || "Player 1"}
+              </p>
+              <div className="text-sm text-gray-500 mt-2">
+                <p>R1: {session.p1_round1_score}</p>
+                <p>R2: {session.p1_round2_score}</p>
+                <p>R3: {session.p1_round3_score}</p>
+              </div>
             </div>
-            <p className="text-orange-500 font-bold text-xl">
-              {session.p1_name || "Player 1"}
-            </p>
-            <div className="text-sm text-gray-500 mt-2">
-              <p>R1: {session.p1_round1_score}</p>
-              <p>R2: {session.p1_round2_score}</p>
-              <p>R3: {session.p1_round3_score}</p>
+
+            {/* Player 2 */}
+            <div className="text-center">
+              <div className="w-24 h-24 bg-cyan-400 rounded-full mb-4 flex items-center justify-center">
+                <span className="text-4xl font-bold text-black">
+                  {session.p2_score}
+                </span>
+              </div>
+              <p className="text-cyan-400 font-bold text-xl">
+                {session.p2_name || "Player 2"}
+              </p>
+              <div className="text-sm text-gray-500 mt-2">
+                <p>R1: {session.p2_round1_score}</p>
+                <p>R2: {session.p2_round2_score}</p>
+                <p>R3: {session.p2_round3_score}</p>
+              </div>
             </div>
           </div>
 
-          {/* Player 2 */}
-          <div className="text-center">
-            <div className="w-24 h-24 bg-cyan-400 rounded-full mb-4 flex items-center justify-center">
-              <span className="text-4xl font-bold text-black">
-                {session.p2_score}
-              </span>
-            </div>
-            <p className="text-cyan-400 font-bold text-xl">
-              {session.p2_name || "Player 2"}
-            </p>
-            <div className="text-sm text-gray-500 mt-2">
-              <p>R1: {session.p2_round1_score}</p>
-              <p>R2: {session.p2_round2_score}</p>
-              <p>R3: {session.p2_round3_score}</p>
-            </div>
-          </div>
-        </div>
-
-        <button
-          onClick={() => (window.location.href = "/")}
-          className="px-8 py-4 bg-gray-700 hover:bg-gray-600 text-white font-bold text-xl rounded"
-        >
-          Play Again
-        </button>
-      </main>
+          <button
+            onClick={() => (window.location.href = "/")}
+            className="px-8 py-4 bg-gray-700 hover:bg-gray-600 text-white font-bold text-xl rounded"
+          >
+            Play Again
+          </button>
+        </main>
+      </>
     );
   }
 
   return (
-    <main className="min-h-screen bg-black text-white p-4 md:p-8">
-      {/* Header */}
-      <div className="text-center mb-8">
+    <>
+      <div className="animated-gradient-bg">
+        <div className="gradient-blob-1" />
+        <div className="gradient-blob-2" />
+        <div className="gradient-blob-3" />
+      </div>
+      <main className="min-h-screen text-white p-4 md:p-8">
+        {/* Header */}
+        <div className="text-center mb-8">
         <h1
           className="text-4xl md:text-6xl font-bold text-orange-500"
           style={{ fontFamily: "Impact, sans-serif" }}
@@ -382,6 +402,7 @@ export default function GamePage() {
           )}
         </div>
       )}
-    </main>
+      </main>
+    </>
   );
 }
