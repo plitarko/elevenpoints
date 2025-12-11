@@ -1,5 +1,6 @@
 "use client";
 
+import { useRive, useStateMachineInput } from "@rive-app/react-canvas";
 import { useEffect, useState } from "react";
 
 interface AudioVisualizerProps {
@@ -7,29 +8,42 @@ interface AudioVisualizerProps {
 }
 
 export default function AudioVisualizer({ isActive }: AudioVisualizerProps) {
-  const [barHeight, setBarHeight] = useState(20);
+  const [mouthValue, setMouthValue] = useState(0);
 
+  const { rive, RiveComponent } = useRive({
+    src: "/gorilla.riv",
+    autoplay: true,
+    stateMachines: "State Machine 1",
+  });
+
+  const mouthInput = useStateMachineInput(rive, "State Machine 1", "mouth");
+
+  // Animate mouth value when active
   useEffect(() => {
     if (!isActive) {
-      setBarHeight(20);
+      setMouthValue(0);
       return;
     }
 
     const interval = setInterval(() => {
-      // Random height between 20 and 100 when active
-      setBarHeight(Math.floor(Math.random() * 80) + 20);
+      // Random value between 20 and 100 when active
+      setMouthValue(Math.floor(Math.random() * 80) + 20);
     }, 100);
 
     return () => clearInterval(interval);
   }, [isActive]);
 
+  // Update Rive input when mouthValue changes
+  useEffect(() => {
+    if (mouthInput) {
+      mouthInput.value = mouthValue;
+    }
+  }, [mouthValue, mouthInput]);
+
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="w-16 h-24 flex items-end justify-center bg-gray-900 rounded-lg p-2">
-        <div
-          className="w-8 bg-orange-500 rounded-sm transition-all duration-100"
-          style={{ height: `${barHeight}%` }}
-        />
+      <div className="w-[512px] h-[512px]">
+        <RiveComponent />
       </div>
       <span className="text-xs text-gray-400">
         {isActive ? "AI SPEAKING" : "Listening..."}
